@@ -10,37 +10,41 @@ object ContinuationBased {
   }
 
   //@Asynchronous
-  def get( /*request: HttpRequest, response: HttpResponse*/ ) {
-    /* below is the callback based (Deft) version 
-    response.write("hello ");
-    db.asyncIdentityGet("world", new AsyncCallback<String>() {
-        public void onSuccess(String result) { response.write(result).finish(); }
-    });
-    */
-	  
-    /* continuation based version */
-    println("hello") //response.write("hello");
+  def get() {
+    println("entering get()")
     reset {
-      val result = asyncIdentityGet("world");  // "blocking" style
-      println(result) //response.write(value).finish();
+      val id = lookup("roger schildmeijer"); // "blocking" style
+      val value = fetch("http://127.0.0.1:8080/" + id); // "blocking" style
+      println(value) // eg. response.write(value).finish 
     }
+    println("leaving get()")
   }
 
-  def asyncIdentityGet(key : String) = shift { k : (String => Unit) =>
+  /**
+   * mocks an asynchronous database lookup.
+   */
+  def lookup(key : String) = shift { k : (String => Unit) =>
     val runnable = new Runnable {
       def run = {
-        Thread.sleep(2000) // simulate network latency
+        Thread.sleep(500) // simulate disk seek latency
         k(key)
       }
     }
     new Thread(runnable).start()
   }
-
-  /* example of continuation passing style */
-  def foo() : Int @cps[Int] = {
-    shift { k : (Int => Int) =>
-      k(7)
-    } + 1
+  
+  
+  /**
+   * mocks an asynchronous http fetch
+   */
+  def fetch(key : String) = shift { k : (String => Unit) =>
+    val runnable = new Runnable {
+      def run = {
+        Thread.sleep(2000) // simulate network latency
+        k(key.dropWhile(_ != 'r'))
+      }
+    }
+    new Thread(runnable).start()
   }
 
 }
