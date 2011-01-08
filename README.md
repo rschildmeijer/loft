@@ -1,7 +1,7 @@
 # Loft
 
-Continuation based non blocking, asynchronous, single threaded web server. Inspired by [swirl] (sugar for tornado),
-[Tornado] and [Deft]
+Continuation based non blocking, asynchronous, single threaded web server. Inspired by [Swirl] (sugar for [Tornado]),
+[Tornado] itself and [Deft]
 
 #Usage:
     object ExampleHandler extends RequestHandler {
