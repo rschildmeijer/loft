@@ -9,15 +9,20 @@ object ContinuationBased {
     get()
   }
 
+  //@Asynchronous
   def get( /*request: HttpRequest, response: HttpResponse*/ ) {
-    //response.write("hello ");
-    //db.asyncIdentityGet("world", new AsyncCallback<String>() {
-    //    public void onSuccess(String result) { response.write(result).finish(); }
-    //});
+    /* below is the callback based (Deft) version 
+	response.write("hello ");
+    db.asyncIdentityGet("world", new AsyncCallback<String>() {
+        public void onSuccess(String result) { response.write(result).finish(); }
+    });
+    */
+	  
+	/* continuation based version */
     println("hello") //response.write("hello");
     reset {
-      val value = asyncIdentityGet("world"); //
-      println(value) //response.write(value);   // "blocking" style
+      val result = asyncIdentityGet("world");  // "blocking" style
+      println(result) //response.write(value).finish();
     }
   }
 
