@@ -8,7 +8,7 @@ Continuation based non blocking, asynchronous, single threaded web server. Inspi
 
       @Asynchronous
       def get() {
-        val http = io.loft.httpclient.AsyncHTTPClient()
+        val http = AsyncHTTPClient()
           reset {
             val id = redis.get("roger_schildmeijer");
             val result = http.fetch("http://127.0.0.1:8080/" + id); 
