@@ -9,13 +9,13 @@
       @Asynchronous
       def get() {
         val http = AsyncHTTPClient()
-          reset {
-            val id = redis get("roger_schildmeijer");   //async call
-            val result = http fetch("http://127.0.0.1:8080/" + id); //async call
-            write(result)
-            finish 
-          }
+        reset {
+          val id = redis get("roger_schildmeijer");   //async call
+          val result = http fetch("http://127.0.0.1:8080/" + id); //async call
+          write(result)
+          finish 
         }
+      }
   
       val application = Application(Map("/".r -> this))
   
