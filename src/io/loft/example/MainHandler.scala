@@ -15,9 +15,9 @@ object MainHandler extends RequestHandler {
   @Asynchronous
   def post() {
     reset {
-      val id = redis.get("roger schildmeijer");
-      val http = io.loft.httpclient.AsyncHTTPClient()
-      val result = http.fetch("http://127.0.0.1:8080/" + id); 
+      val id = redis get("roger schildmeijer");
+      val http = AsyncHTTPClient()
+      val result = http fetch("http://127.0.0.1:8080/" + id); 
       write(result)
       finish 
     }
@@ -37,8 +37,8 @@ object MainHandler extends RequestHandler {
   
   def main(args: Array[String]) {
     val httpServer = HTTPServer(application)
-    httpServer.listen(8888)
-    IOLoop.start
+    httpServer listen(8888)
+    IOLoop start
   }
 
 }

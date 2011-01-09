@@ -26,6 +26,10 @@
       }
 
     }
+    
+#Requirements
+Java >=1.5   
+Scala >= 2.8.0 (with scala continuation plugin enabled (continuations:enable))
 
 [Continuation]: http://www.scala-lang.org/node/2096
 [swirl]: http://code.naeseth.com/swirl/
