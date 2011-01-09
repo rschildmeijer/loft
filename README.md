@@ -1,6 +1,6 @@
 # Loft
 
-[Continuation] based non blocking, asynchronous, single threaded web server. Inspired by [Swirl] (sugar for [Tornado]),
+[Continuation] based non-blocking, asynchronous, single threaded web server. Inspired by [Swirl] (sugar for [Tornado]),
 [Tornado] itself and [Deft]
 
 #Usage:
@@ -28,8 +28,8 @@
     }
     
 #Requirements
-Java >=1.5   
-Scala >= 2.8.0 (with scala continuation plugin enabled (continuations:enable))
+Java >= 1.5   
+Scala >= 2.8.0 (for loft developers: enable Scala continuation plugin (-P:continuations:enable))
 
 [Continuation]: http://www.scala-lang.org/node/2096
 [swirl]: http://code.naeseth.com/swirl/
