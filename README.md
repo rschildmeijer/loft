@@ -26,7 +26,11 @@
       }
 
     }
-    
+
+#Disclaimer
+Loft is far from (production) ready. The example above (ExampleHandler) is the proposed syntax for doing asynchronous calls.
+The initial plan for Loft is to adopt as much as possible from the [facebook/tornado] master branch.
+ 
 #Requirements
 Java >= 1.5   
 Scala >= 2.8.0 (for loft developers: enable Scala continuation plugin (-P:continuations:enable))
@@ -35,3 +39,4 @@ Scala >= 2.8.0 (for loft developers: enable Scala continuation plugin (-P:contin
 [swirl]: http://code.naeseth.com/swirl/
 [Tornado]: http://github.com/facebook/tornado/
 [Deft]: http://github.com/rschildmeijer/deft
+[facebook/tornado]: http://github.com/facebook/tornado
