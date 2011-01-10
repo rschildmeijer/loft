@@ -5,7 +5,7 @@ import scala.util.continuations._
 
 object ContinuationBased {
 
-  def main(args : Array[String]) {
+  def main(args: Array[String]) {
     get()
   }
 
@@ -23,7 +23,8 @@ object ContinuationBased {
   /**
    * mocks an asynchronous database lookup.
    */
-  def lookup(key : String) = shift { k : (String => Unit) =>
+  def lookup(key: String) = shift { k: (String => Unit) =>
+    println("lookup")
     val runnable = new Runnable {
       def run = {
         Thread.sleep(500) // simulate disk seek latency
@@ -32,12 +33,12 @@ object ContinuationBased {
     }
     new Thread(runnable).start()
   }
-  
-  
+
   /**
    * mocks an asynchronous http fetch
    */
-  def fetch(key : String) = shift { k : (String => Unit) =>
+  def fetch(key: String) = shift { k: (String => Unit) =>
+    println("fetch")
     val runnable = new Runnable {
       def run = {
         Thread.sleep(2000) // simulate network latency
