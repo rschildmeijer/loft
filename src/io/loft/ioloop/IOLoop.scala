@@ -5,6 +5,7 @@ import java.nio.channels.Selector
 import java.nio.channels.SelectableChannel
 
 import scala.collection.mutable.Map
+import scala.collection.mutable.ListBuffer
 import scala.Math.min
 
 object IOLoop {
@@ -12,8 +13,8 @@ object IOLoop {
   private[this] val selector: Selector = Selector.open
   private[this] val handlers = Map[SelectableChannel, SelectionKey => Unit]()
   private[this] val events = Map[SelectableChannel, String]()
-  private[this] val callbacks = List[() => Unit]()
-  private[this] val timeouts = List[Timeout]()
+  private[this] val callbacks = ListBuffer[() => Unit]()
+  private[this] val timeouts = ListBuffer[Timeout]()
   private[this] var running = false
   private[this] var stopped = false
   private[this] val blockingSignalThreshold = null
@@ -48,15 +49,18 @@ object IOLoop {
     running = true;
     while (true) {
       var pollTimeout = 200L
-      val callbacks = this.callbacks
-      this.callbacks.remove(_ => true) // remove all elements
+      val callbacks = this.callbacks.toList
+      this.callbacks.remove(0, callbacks.size) // remove all elements
       callbacks.foreach(runCallback(_))
 
       if (!this.callbacks.isEmpty) pollTimeout = 0
 
       val now = System.currentTimeMillis
       timeouts.takeWhile(_.deadline <= now).foreach(timeout => runCallback(timeout.callback))
-      timeouts.remove(_.deadline <= now)
+      val index = timeouts.findIndexOf(_.deadline > now)
+      index match {
+    	  case i if i != -1 => timeouts.remove(0, i+1) 
+      }
       if (!timeouts.isEmpty) {
         val ms = timeouts.head.deadline - now
         pollTimeout = min(ms, pollTimeout);
@@ -80,15 +84,30 @@ object IOLoop {
   def stop() {
 	  running = false
 	  stopped = true
-	  wake
-  }
-  
-  def wake() {
-	  
   }
 
+  def isRunning = running
+
   def runCallback(callback: () => Unit) { callback }
+  
+  def addTimeout(deadline: Long, callback: () => Unit): Timeout = {
+	 val timeout = Timeout(deadline, callback) 
+	 timeouts += timeout
+	 timeouts.sortWith( _.deadline < _.deadline)	// TODO RS verify this sort
+	 timeout
+  }
+  
+  def removeTimeout(timeout: Timeout) {
+	  val index = timeouts.findIndexOf(_ == timeout)
+	  index match {
+	 	  case i if i != -1 => timeouts.remove(i) 
+	  }
+  }
+  
+  def addCallback(callback: () => Unit) {
+	  callbacks += callback
+  }
 
 }
 
-case class Timeout(deadline: Long, callback: () => Unit) {}
+case class Timeout(deadline: Long, callback: () => Unit) 
