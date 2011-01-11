@@ -23,13 +23,13 @@ object IOLoop {
     register(channel, events)
   }
 
-  def register(channel: SelectableChannel, events: Int) {}
+  def register(channel: SelectableChannel, events: Int) { channel.register(selector, events) }
 
-  def unregister(channel: SelectableChannel) {}
+  def unregister(channel: SelectableChannel) { channel.keyFor(selector).cancel }
 
   def updateHandler(channel: SelectableChannel, events: Int) { modify(channel, events) }
 
-  def modify(channel: SelectableChannel, events: Int) {}
+  def modify(channel: SelectableChannel, events: Int) { channel.register(selector, events) }
 
   def removeHandler(channel: SelectableChannel) {
     handlers -= channel
@@ -55,7 +55,7 @@ object IOLoop {
       timeouts.takeWhile(_.deadline <= now).foreach(timeout => runCallback(timeout.callback))
       val index = timeouts.findIndexOf(_.deadline > now)
       index match {
-    	  case i if i != -1 => timeouts.remove(0, i+1) 
+        case i if i != -1 => timeouts.remove(0, i + 1)
       }
       if (!timeouts.isEmpty) {
         val ms = timeouts.head.deadline - now
@@ -67,55 +67,55 @@ object IOLoop {
       if (selector.select(pollTimeout) != 0) {
         val keys = selector.selectedKeys.iterator;
         while (keys.hasNext) {
-        	val key = keys.next
-        	handlers(key.channel)(key)
-        	keys.remove 
+          val key = keys.next
+          handlers(key.channel)(key)
+          keys.remove
         }
       }
-      
+
       stopped = false
     }
   }
-  
+
   def stop() {
-	  running = false
-	  stopped = true
+    running = false
+    stopped = true
   }
 
   def isRunning = running
 
   def runCallback(callback: () => Unit) { callback }
-  
+
   def addTimeout(deadline: Long, callback: () => Unit): Timeout = {
-	 val timeout = Timeout(deadline, callback) 
-	 timeouts += timeout
-	 timeouts.sortWith( _.deadline < _.deadline)	// TODO RS verify this sort
-	 timeout
+    val timeout = Timeout(deadline, callback)
+    timeouts += timeout
+    timeouts.sortWith(_.deadline < _.deadline) // TODO RS verify this sort
+    timeout
   }
-  
+
   def removeTimeout(timeout: Timeout) {
-	  val index = timeouts.findIndexOf(_ == timeout)
-	  index match {
-	 	  case i if i != -1 => timeouts.remove(i) 
-	  }
+    val index = timeouts.findIndexOf(_ == timeout)
+    index match {
+      case i if i != -1 => timeouts.remove(i)
+    }
   }
-  
+
   def addCallback(callback: () => Unit) { callbacks += callback }
 
 }
 
-case class Timeout(deadline: Long, callback: () => Unit) 
+case class Timeout(deadline: Long, callback: () => Unit)
 
 case class PeriodicTimeout(callbackTime: Long, callback: () => Unit) {
-	var running = false
-	
-	def start {
-		running = true
-		val timeout = System.currentTimeMillis + callbackTime
-		IOLoop.addTimeout(timeout, () => this.callback)
-	}
-	
-	def stop { running = false}
-	
-	def run { callback}
+  var running = false
+
+  def start {
+    running = true
+    val timeout = System.currentTimeMillis + callbackTime
+    IOLoop.addTimeout(timeout, () => this.callback)
+  }
+
+  def stop { running = false }
+
+  def run { callback }
 }
