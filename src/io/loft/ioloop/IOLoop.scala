@@ -17,7 +17,6 @@ object IOLoop {
   private[this] val timeouts = ListBuffer[Timeout]()
   private[this] var running = false
   private[this] var stopped = false
-  private[this] val blockingSignalThreshold = null
 
   def addHandler(channel: SelectableChannel, handler: SelectionKey => Unit, events: Int) {
     handlers += channel -> handler
@@ -37,9 +36,6 @@ object IOLoop {
     events -= channel;
     unregister(channel)
   }
-
-  //def setBlockingSignalThreshold(seconds: Int, action: () => Unit) { }
-  //def setBlockingLogThreshold(seconds: Int) { }
 
   def start {
     if (stopped) {
@@ -104,10 +100,22 @@ object IOLoop {
 	  }
   }
   
-  def addCallback(callback: () => Unit) {
-	  callbacks += callback
-  }
+  def addCallback(callback: () => Unit) { callbacks += callback }
 
 }
 
 case class Timeout(deadline: Long, callback: () => Unit) 
+
+case class PeriodicTimeout(callbackTime: Long, callback: () => Unit) {
+	var running = false
+	
+	def start {
+		running = true
+		val timeout = System.currentTimeMillis + callbackTime
+		IOLoop.addTimeout(timeout, () => this.callback)
+	}
+	
+	def stop { running = false}
+	
+	def run { callback}
+}
