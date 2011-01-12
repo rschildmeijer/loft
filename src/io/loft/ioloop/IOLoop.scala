@@ -23,13 +23,13 @@ object IOLoop {
     register(channel, events)
   }
 
-  def register(channel: SelectableChannel, events: Int) { channel.register(selector, events) }
+  def register(channel: SelectableChannel, events: Int) = channel.register(selector, events) 
 
-  def unregister(channel: SelectableChannel) { channel.keyFor(selector).cancel }
+  def unregister(channel: SelectableChannel) = channel.keyFor(selector).cancel 
 
-  def updateHandler(channel: SelectableChannel, events: Int) { modify(channel, events) }
+  def updateHandler(channel: SelectableChannel, events: Int) =  modify(channel, events) 
 
-  def modify(channel: SelectableChannel, events: Int) { channel.register(selector, events) }
+  def modify(channel: SelectableChannel, events: Int) = channel.register(selector, events) 
 
   def removeHandler(channel: SelectableChannel) {
     handlers -= channel
@@ -84,7 +84,7 @@ object IOLoop {
 
   def isRunning = running
 
-  def runCallback(callback: () => Unit) { callback }
+  def runCallback(callback: () => Unit) = callback 
 
   def addTimeout(deadline: Long, callback: () => Unit): Timeout = {
     val timeout = Timeout(deadline, callback)
@@ -100,7 +100,7 @@ object IOLoop {
     }
   }
 
-  def addCallback(callback: () => Unit) { callbacks += callback }
+  def addCallback(callback: () => Unit) = callbacks += callback 
 
 }
 
@@ -115,7 +115,7 @@ case class PeriodicTimeout(callbackTime: Long, callback: () => Unit) {
     IOLoop.addTimeout(timeout, () => this.callback)
   }
 
-  def stop { running = false }
+  def stop = running = false 
 
-  def run { callback }
+  def run =  callback
 }
