@@ -10,13 +10,13 @@ import scala.Math.min
 
 object IOLoop {
 
-  private[this] val selector: Selector = Selector.open
-  private[this] val handlers = Map[SelectableChannel, SelectionKey => Unit]()
-  private[this] val events = Map[SelectableChannel, String]()
-  private[this] val callbacks = ListBuffer[() => Unit]()
-  private[this] val timeouts = ListBuffer[Timeout]()
-  private[this] var running = false
-  private[this] var stopped = false
+  private val selector: Selector = Selector.open
+  private val handlers = Map[SelectableChannel, SelectionKey => Unit]()
+  private val events = Map[SelectableChannel, String]()
+  private val callbacks = ListBuffer[() => Unit]()
+  private val timeouts = ListBuffer[Timeout]()
+  private var running = false
+  private var stopped = false
 
   def addHandler(channel: SelectableChannel, handler: SelectionKey => Unit, events: Int) {
     handlers += channel -> handler
