@@ -1,14 +1,16 @@
 package io.loft
 
+import java.nio.ByteBuffer
 import java.nio.channels.SelectionKey
 import java.net.InetSocketAddress
 import java.nio.channels.SocketChannel
 import scala.collection.mutable.MutableList
 import java.nio.channels.SelectableChannel
 
-class IOStream(channel: SelectableChannel, maxBufferSize: Long = 104857600, readChunkSize: Int = 4096) {
+class IOStream( /*channel: SelectableChannel, */ key: SelectionKey, maxBufferSize: Long = 104857600,
+                                                 readChunkSize: Int = 4096) {
 
-  channel.configureBlocking(false)
+  key.channel.configureBlocking(false)
 
   private val readBuffer = new StringBuilder()
   private val writeBuffer = new StringBuilder()
@@ -23,7 +25,7 @@ class IOStream(channel: SelectableChannel, maxBufferSize: Long = 104857600, read
   private var connecting = false
 
   def connect(address: (String, Int), connectCallback: () => Unit = null) {
-    channel match {
+    key.channel match {
       case c: SocketChannel => {
         c.connect(new InetSocketAddress(address._1, address._2))
         this.connectCallback = connectCallback
@@ -39,7 +41,7 @@ class IOStream(channel: SelectableChannel, maxBufferSize: Long = 104857600, read
 
     while (continue) {
       if (readFromBuffer()) return
-      checkClosed()
+      // checkClosed()
       if (readToBuffer() == 0) continue = false
     }
     addIOState(SelectionKey.OP_READ)
@@ -67,12 +69,22 @@ class IOStream(channel: SelectableChannel, maxBufferSize: Long = 104857600, read
     false
   }
 
-  def checkClosed() {
-
-  }
+  // def checkClosed() { if(channel == null) throw new IOException("Stream is closed") }
 
   def readToBuffer(): Int = {
-    2
+    val buffer: ByteBuffer = key.attachment().asInstanceOf[ByteBuffer]
+
+    key.channel match {
+      case c: SocketChannel => c.read(buffer)
+      case _ => return 0
+    }
+    val chunk = new String(buffer.array(), 0, buffer.limit(), "UTF-8")
+    readBuffer.append(chunk)
+    //     if self._read_buffer.tell() >= self.max_buffer_size:
+    //            logging.error("Reached maximum read buffer size")
+    //            self.close()
+    //            raise IOError("Reached maximum read buffer size")
+    chunk.size
   }
 
   def addIOState(ops: Int) {
