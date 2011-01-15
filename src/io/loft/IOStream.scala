@@ -1,5 +1,7 @@
 package io.loft
 
+import io.loft.ioloop._
+
 import java.nio.ByteBuffer
 import java.nio.channels.SelectionKey
 import java.net.InetSocketAddress
@@ -7,15 +9,14 @@ import java.nio.channels.SocketChannel
 import scala.collection.mutable.MutableList
 import java.nio.channels.SelectableChannel
 
-class IOStream( /*channel: SelectableChannel, */ key: SelectionKey, maxBufferSize: Long = 104857600,
-                                                 readChunkSize: Int = 4096) {
+class IOStream(var key: SelectionKey, maxBufferSize: Long = 104857600, readChunkSize: Int = 4096) {
 
   key.channel.configureBlocking(false)
 
   private val readBuffer = new StringBuilder()
   private val writeBuffer = new StringBuilder()
   private var readDelimeter = ""
-  private var readBytes = 0
+  private var bytesToRead = 0
 
   private var readCallback: (String) => Unit = null
   private var writeCallback: () => Unit = null
@@ -47,12 +48,28 @@ class IOStream( /*channel: SelectableChannel, */ key: SelectionKey, maxBufferSiz
     addIOState(SelectionKey.OP_READ)
   }
 
+  def readBytes(numBytes: Int, callback: (String) => Unit) {
+    if (numBytes == 0) {
+      callback("")
+      return
+    }
+    bytesToRead = numBytes
+    readCallback = callback
+    var continue = true
+    while (continue) {
+      if (readFromBuffer()) return
+      //checkClosed()
+      if (readToBuffer() == 0) continue = false
+    }
+    addIOState(SelectionKey.OP_READ)
+  }
+
   def readFromBuffer(): Boolean = {
-    if (readBytes != 0 && readBuffer.size >= readBytes) {
-      val numBytes = readBytes
+    if (bytesToRead != 0 && readBuffer.size >= bytesToRead) {
+      val numBytes = bytesToRead
       val callback = readCallback
       readCallback = null
-      readBytes = 0
+      bytesToRead = 0
       runCallback(callback, consume(numBytes))
       return true
     } else if (!readDelimeter.isEmpty) {
@@ -69,6 +86,13 @@ class IOStream( /*channel: SelectableChannel, */ key: SelectionKey, maxBufferSiz
     false
   }
 
+  def write(data: String, callback: () => Unit) {
+    //checkClosed()
+    writeBuffer.append(data)
+    addIOState(SelectionKey.OP_WRITE)
+    writeCallback = callback
+  }
+
   // def checkClosed() { if(channel == null) throw new IOException("Stream is closed") }
 
   def readToBuffer(): Int = {
@@ -78,6 +102,8 @@ class IOStream( /*channel: SelectableChannel, */ key: SelectionKey, maxBufferSiz
       case c: SocketChannel => c.read(buffer)
       case _ => return 0
     }
+    buffer.flip
+
     val chunk = new String(buffer.array(), 0, buffer.limit(), "UTF-8")
     readBuffer.append(chunk)
     //     if self._read_buffer.tell() >= self.max_buffer_size:
@@ -88,13 +114,16 @@ class IOStream( /*channel: SelectableChannel, */ key: SelectionKey, maxBufferSiz
   }
 
   def addIOState(ops: Int) {
-
+    if (key == null) return
+    IOLoop.updateHandler(key.channel, key.interestOps | ops)
   }
 
   def runCallback(callback: (String) => Unit, data: String) = callback(data)
 
   def consume(numBytes: Int): String = {
-    ""
+    val result = readBuffer.substring(0, numBytes)
+    readBuffer.delete(0, numBytes)
+    result
   }
 
 }
