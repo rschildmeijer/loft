@@ -93,6 +93,28 @@ class IOStream(var key: SelectionKey, maxBufferSize: Long = 104857600, readChunk
     writeCallback = callback
   }
 
+  def setCloseCallback(callback: () => Unit) = closeCallback = callback;
+
+  def close() {
+    if (key != null) {
+      IOLoop.removeHandler(key.channel)
+      key.channel().close()
+      key = null
+      if (closeCallback != null) closeCallback()
+    }
+
+  }
+  
+  def reading() = readCallback != null
+  
+  def writing() = writeBuffer.size > 0
+  
+  def closed() = key != null
+  
+  def handleEvent() { 
+	  // TODO RS 110120
+  }
+
   // def checkClosed() { if(channel == null) throw new IOException("Stream is closed") }
 
   def readToBuffer(): Int = {
