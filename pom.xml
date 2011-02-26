@@ -5,7 +5,7 @@
     <groupId>org.deftserver</groupId>
     <artifactId>loft</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <name>Discerning Drinker Scala</name>
+    <name>Loft</name>
     <properties>
         <scala.version>2.8.1</scala.version>
     </properties>
