@@ -3,7 +3,7 @@
 [Continuation] based non-blocking, asynchronous, single threaded web server. Inspired by [Swirl] (sugar for [Tornado]),
 [Tornado] itself and [Deft]
 
-#Usage:
+# Usage:
     object ExampleHandler extends RequestHandler {
 
       @Asynchronous
@@ -27,11 +27,11 @@
 
     }
 
-#Disclaimer
+# Disclaimer
 Loft is far from (production) ready. The example above (ExampleHandler) is the proposed syntax for doing asynchronous calls.
 The initial plan for Loft is to adopt as much as possible from the [facebook/tornado] master branch.
  
-#Requirements
+# Requirements
 Java >= 1.5   
 Scala >= 2.8.0 (for loft developers: enable Scala continuation plugin (-P:continuations:enable))
 
